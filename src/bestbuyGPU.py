@@ -1,12 +1,5 @@
 from os.path import join, dirname
 from dotenv import load_dotenv
- 
-# Create .env file path.
-dotenv_path = join(dirname(__file__), '.env')
- 
-# Load file from the path.
-load_dotenv(dotenv_path)
-
 import requests
 import time
 # import io
@@ -15,15 +8,20 @@ import webbrowser
 import smtplib
 import ssl
 import os
-print(os.environ['HOME'])
 from GPUlist import gpu_links
 
-# DO NOT TOUCH -----------------------------------------------
+# Create .env file path.
+dotenv_path = join(dirname(__file__), '.env')
+
+# Load file from the path.
+load_dotenv(dotenv_path)
+
 config = {
     "port": 465,  # For SSL
     # port: 587 # For TLS
-    "receiver_email": "tunguyen2705@gmail.com", 
-    # "receiver_email": "wanhdynamite@gmail.com",
+    "receiver_email": "wanhdynamite@gmail.com", 
+    # "receiver_email": "tunguyen2705@gmail.com",
+    "cc": "wanhdynamite@gmail.com",
     "headers": {"User-Agent": "Mozilla/5.0"},
     "context": ssl.create_default_context(),
     "headerMsg": """\
@@ -64,21 +62,31 @@ def check():
 
 
 def check_single(name):
-    source = requests.get(gpu_links[name], headers=config["headers"]).text
-    # is_sold_out = source.__contains__("<button type=\"button\" class=\"btn btn-disabled btn-lg btn-block add-to-cart-button\" disabled=\"\" style=\"padding:0 8px\">Sold Out</button></div></div>")
-    soldOutBtn = "<button class=\"btn btn-disabled btn-lg btn-block add-to-cart-button\" disabled=\"\" type=\"button\"" + \
-        " data-sku-id=\"" + getSkuID(name) + \
-        "\" style=\"padding:0 8px\">Sold Out</button>"
-    comingSoonBtn = "<button class=\"btn btn-disabled btn-lg btn-block add-to-cart-button\" disabled=\"\" type=\"button\"" + \
-        " data-sku-id=\"" + getSkuID(name) + \
-        "\" style=\"padding:0 8px\">Coming Soon</button>"
-    # debug log
-    # if not source.__contains__(soldOutBtn):
-    #     print(soldOutBtn)
-    #     with io.open('src/log', "w", encoding="utf-8") as f:
-    #         f.write(source)
-
-    return not source.__contains__(soldOutBtn) and not source.__contains__(comingSoonBtn)
+    try:
+        source = requests.get(gpu_links[name], headers=config["headers"]).text
+        # is_sold_out = source.__contains__("<button type=\"button\" class=\"btn btn-disabled btn-lg btn-block add-to-cart-button\" disabled=\"\" style=\"padding:0 8px\">Sold Out</button></div></div>")
+        soldOutBtn = "<button class=\"btn btn-disabled btn-lg btn-block add-to-cart-button\" disabled=\"\" type=\"button\"" + \
+            " data-sku-id=\"" + getSkuID(name) + \
+            "\" style=\"padding:0 8px\">Sold Out</button>"
+        comingSoonBtn = "<button class=\"btn btn-disabled btn-lg btn-block add-to-cart-button\" disabled=\"\" type=\"button\"" + \
+            " data-sku-id=\"" + getSkuID(name) + \
+            "\" style=\"padding:0 8px\">Coming Soon</button>"
+        unavailableBtn = "<button class=\"btn btn-disabled btn-lg btn-block add-to-cart-button\" disabled=\"\" type=\"button\"" + \
+            " data-sku-id=\"" + getSkuID(name) + \
+            "\" style=\"padding:0 8px\">Unavailable Nearby</button>"
+        # debug log
+        if not source.__contains__(soldOutBtn) and not source.__contains__(comingSoonBtn) and not source.__contains__(unavailableBtn):
+            with io.open('src/log'+ '-' + datetime.datetime.now(), "w", encoding="utf-8") as f:
+                f.write(soldOutBtn+"\n")
+                f.write(comingSoonBtn+"\n")
+                f.write(unavailableBtn+"\n")
+                f.write("--------------------------------------------------------\n")
+                f.write(source)
+    except:
+        print("check single failed ... moving on")
+        return False
+        
+    return not source.__contains__(soldOutBtn) and not source.__contains__(comingSoonBtn) and not source.__contains__(unavailableBtn)
 
 
 def signal():
@@ -106,6 +114,7 @@ def email_me(name):
 
 if __name__ == '__main__':
     gpuToCheck = {}
+
     # assume all are unavailable
     for gpu_name in gpu_links:
         gpuToCheck[gpu_name] = False
