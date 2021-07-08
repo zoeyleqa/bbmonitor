@@ -2,13 +2,12 @@ from os.path import join, dirname
 from dotenv import load_dotenv
 import requests
 import time
-# import io
+import io
 from datetime import datetime
 import webbrowser
 import smtplib
 import ssl
 import os
-# import io
 from GPUlist import gpu_links
 
 # Create .env file path.
@@ -65,17 +64,16 @@ def check():
 def check_single(name):
     try:
         source = requests.get(gpu_links[name], headers=config["headers"]).text
-        # is_sold_out = source.__contains__("<button type=\"button\" class=\"btn btn-disabled btn-lg btn-block add-to-cart-button\" disabled=\"\" style=\"padding:0 8px\">Sold Out</button></div></div>")
-        soldOutBtn = "<button class=\"btn btn-disabled btn-lg btn-block add-to-cart-button\" disabled=\"\" type=\"button\"" + \
-            " data-sku-id=\"" + getSkuID(name) + \
-            "\" style=\"padding:0 8px\">Sold Out</button>"
-        comingSoonBtn = "<button class=\"btn btn-disabled btn-lg btn-block add-to-cart-button\" disabled=\"\" type=\"button\"" + \
-            " data-sku-id=\"" + getSkuID(name) + \
-            "\" style=\"padding:0 8px\">Coming Soon</button>"
-        unavailableBtn = "<button class=\"btn btn-disabled btn-lg btn-block add-to-cart-button\" disabled=\"\" type=\"button\"" + \
-            " data-sku-id=\"" + getSkuID(name) + \
-            "\" style=\"padding:0 8px\">Unavailable Nearby</button>"
-        # # debug log
+        soldOutBtn = '<button class="btn btn-disabled btn-lg btn-block add-to-cart-button" disabled="" ' + \
+                    'type="button" data-sku-id="'+ getSkuID(name) +'" data-button-state="SOLD_OUT" ' + \
+                    'style="padding:0 8px">Sold Out</button>'
+        comingSoonBtn = '<button class="btn btn-disabled btn-lg btn-block add-to-cart-button" disabled="" ' + \
+                    'type="button" data-sku-id="'+ getSkuID(name) +'" data-button-state="COMING_SOON" ' + \
+                    'style="padding:0 8px">Coming Soon</button>'
+        unavailableBtn = '<button class="btn btn-disabled btn-lg btn-block add-to-cart-button" disabled="" ' + \
+                    'type="button" data-sku-id="'+ getSkuID(name) +'" data-button-state="UNAVAILABLE_NEARBY" ' + \
+                    'style="padding:0 8px">Unavailable Nearby</button>'
+        # debug log
         # if not source.__contains__(soldOutBtn) and not source.__contains__(comingSoonBtn) and not source.__contains__(unavailableBtn):
         #     now = datetime.now().strftime("%m-%d-%Y-%H%M%S")
         #     with io.open('src/log'+ '-' + now +'.txt', "w", encoding="utf-8") as f:
